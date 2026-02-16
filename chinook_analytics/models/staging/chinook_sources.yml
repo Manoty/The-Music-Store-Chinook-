@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: chinook
+    schema: main   # (DuckDB/SQLite usually main)
+    tables:
+      - name: customer
+      - name: invoice
+      - name: invoiceline
+      - name: track
+      - name: album
+      - name: artist
+      - name: genre
+      - name: employee
+      - name: mediatype
+      - name: playlist
+      - name: playlisttrack
