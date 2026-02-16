@@ -203,9 +203,12 @@ if 'genre_revenue_global' in df.columns:
 # -----------------------------
 st.subheader(f"{selected_genre} - Country vs Global Comparison")
 if 'genre_revenue_country' in country_df.columns and 'genre_revenue_global' in df.columns:
-    country_genre_trend = country_df[country_df['genre_name'] == selected_genre].groupby('revenue_month')['genre_revenue_country'].sum().reset_index()
-    global_genre_trend = df[df['genre_name'] == selected_genre].groupby('revenue_month')['genre_revenue_global'].sum().reset_index()
-    trend_merge = pd.merge(country_genre_trend, global_genre_trend, on='revenue_month', how='outer').fillna(0)
+    col1.metric("Country Revenue", f"${country_revenue:,.0f}")
+    col2.metric("Top Genre Revenue", f"${top_genre_revenue:,.0f}")
+    col3.metric("Top Customer LTV", f"${top_ltv:,.0f}" if top_ltv > 0 else "N/A")
+    col4.metric("Top Customer Contribution", f"{top_contrib*100:.2f}%" if top_contrib > 0 else "N/A")
+    yoy_text, yoy_color = growth_metric(yoy)
+    col5.metric("Country YoY Growth", yoy_text, delta_color=yoy_color)
 
     fig_cmp = go.Figure()
     fig_cmp.add_trace(go.Scatter(
