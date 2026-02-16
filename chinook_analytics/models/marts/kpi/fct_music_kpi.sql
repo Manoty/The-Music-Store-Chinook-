@@ -59,15 +59,19 @@ top_customers as (
     select
         c.customer_id,
         c.country,
-        sum(il.unit_price * il.quantity) as lifetime_revenue,
-        rank() over (partition by c.country order by sum(il.unit_price * il.quantity) desc) as customer_rank
+        sum(il.unit_price * il.quantity) as top_customer_ltv,
+        rank() over (partition by c.country order by sum(il.unit_price * il.quantity) desc) as customer_rank,
+        case 
+            when sum(il.unit_price * il.quantity) = 0 then null
+            else sum(il.unit_price * il.quantity) / sum(sum(il.unit_price * il.quantity)) over (partition by c.country)
+        end as top_customer_contribution_pct
     from {{ ref('stg_chinook__customer') }} c
     join {{ ref('int_sales__invoice_items') }} il
         on c.customer_id = il.customer_id
     group by c.customer_id, c.country
 ),
 
--- Top N countries filter (adjustable, example: 5)
+-- Top N countries filter (Top 5 example)
 top_countries as (
     select *
     from country_kpi
@@ -110,14 +114,11 @@ select
          else (gk.genre_revenue_global - gk.prev_year_genre_revenue_global) / gk.prev_year_genre_revenue_global
     end as genre_yoy_growth_pct,
 
-    -- Top customer contribution
+    -- Top customer info (LEFT JOIN ensures column always exists)
     tcust.customer_id as top_customer_id,
-    tcust.lifetime_revenue as top_customer_ltv,
+    tcust.top_customer_ltv,
     tcust.customer_rank as top_customer_rank_in_country,
-    case 
-        when tcust.lifetime_revenue is null or tc.country_revenue = 0 then null
-        else tcust.lifetime_revenue / tc.country_revenue
-    end as top_customer_contribution_pct
+    tcust.top_customer_contribution_pct
 
 from genre_country_kpi gc
 left join top_countries tc
