@@ -5,37 +5,45 @@ import plotly.express as px
 import plotly.graph_objects as go
 import os
 import yaml
+import subprocess
 
 # -----------------------------
 # 1. Streamlit Page Setup
 # -----------------------------
 st.set_page_config(page_title="Music Store Executive Dashboard", layout="wide")
 st.title("🎵 Music Store Executive Dashboard")
-st.markdown("Interactive KPIs, trends, and top customers by country & genre")
+st.markdown("Interactive KPIs, trends, top customers, with one-click dbt refresh")
 
 # -----------------------------
 # 2. Connect to dbt DuckDB dynamically
 # -----------------------------
 dbt_profiles_path = os.path.expanduser("~/.dbt/profiles.yml")
-
 with open(dbt_profiles_path) as f:
     profiles = yaml.safe_load(f)
 
-profile_name = "default"  # adjust if your profile name is different
-target_name = profiles[profile_name]['target']  # e.g., dev
+profile_name = "default"  # change if needed
+target_name = profiles[profile_name]['target']
 dbt_target_config = profiles[profile_name]['outputs'][target_name]
 duckdb_path = dbt_target_config['path']
 
 conn = duckdb.connect(duckdb_path)
 
 # -----------------------------
-# 3. Load KPI Mart
+# 3. Refresh dbt & Reload Data
 # -----------------------------
-@st.cache_data
-def load_data():
+def run_dbt_and_reload():
+    st.info("Running dbt models... This may take a moment.")
+    subprocess.run(["dbt", "run"], check=True)
+    st.success("dbt run completed, reloading data...")
     return conn.execute("SELECT * FROM fct_music_kpi").df()
 
-df = load_data()
+if st.button("🔄 Refresh Data (Run dbt)"):
+    df = run_dbt_and_reload()
+else:
+    @st.cache_data
+    def load_data():
+        return conn.execute("SELECT * FROM fct_music_kpi").df()
+    df = load_data()
 
 # -----------------------------
 # 4. Sidebar Filters
@@ -49,7 +57,7 @@ top_countries_df = df[df['country_rank'] <= top_n_countries]
 country_df = top_countries_df[top_countries_df['country'] == selected_country]
 
 # -----------------------------
-# 5. KPI Cards
+# 5. KPI Cards & Charts
 # -----------------------------
 st.subheader(f"Top KPIs for {selected_country}")
 
@@ -65,10 +73,7 @@ col3.metric("Top Customer LTV", f"${country_df['top_customer_ltv'].max():,.0f}")
 col4.metric("Top Customer Contribution", f"{(country_df['top_customer_contribution_pct'].max()*100):.2f}%")
 col5.metric("Country YoY Growth", format_growth(country_df['country_yoy_growth_pct'].mean()))
 
-# -----------------------------
-# 6. Charts
-# -----------------------------
-# 6a. Top genres per country
+# Charts (same as before)
 st.subheader("Top Genres per Country (Top 5)")
 genre_chart = px.bar(
     country_df,
@@ -80,7 +85,6 @@ genre_chart = px.bar(
 genre_chart.update_layout(showlegend=False)
 st.plotly_chart(genre_chart, use_container_width=True)
 
-# 6b. Country Revenue Trend
 st.subheader("Country Revenue Trend")
 revenue_trend = top_countries_df.groupby(['revenue_month', 'country'])[['country_revenue', 'country_ytd_revenue']].sum().reset_index()
 country_trend = revenue_trend[revenue_trend['country'] == selected_country]
@@ -92,14 +96,12 @@ fig.add_trace(go.Scatter(x=country_trend['revenue_month'], y=country_trend['coun
 fig.update_layout(title=f"{selected_country} Revenue & YTD Trend", xaxis_title="Month", yaxis_title="Revenue")
 st.plotly_chart(fig, use_container_width=True)
 
-# 6c. Top Customers
 st.subheader("Top Customers")
 top_customers = country_df[['top_customer_id', 'top_customer_ltv', 'top_customer_contribution_pct']].drop_duplicates().nlargest(5, 'top_customer_ltv')
 top_customers['label'] = top_customers.apply(lambda x: f"${x['top_customer_ltv']:,.0f}\n{x['top_customer_contribution_pct']*100:.1f}%", axis=1)
 customer_chart = px.bar(top_customers, x='top_customer_id', y='top_customer_ltv', text='label', color='top_customer_ltv')
 st.plotly_chart(customer_chart, use_container_width=True)
 
-# 6d. Global Genre Revenue Trend
 st.subheader("Global Genre Revenue Trend")
 genre_trend = df.groupby(['revenue_month', 'genre_name'])['genre_revenue_global'].sum().reset_index()
 selected_genre_trend = genre_trend[genre_trend['genre_name'] == selected_genre]
