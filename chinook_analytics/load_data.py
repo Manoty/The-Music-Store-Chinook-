@@ -1,32 +1,34 @@
+import sqlite3
 import pandas as pd
+import requests
 import os
 
-# Create the seeds directory if it doesn't exist
+# 1. Setup directories
 os.makedirs('seeds', exist_ok=True)
 
-# List of tables in the Chinook dataset
-tables = [
-    'Artist', 'Album', 'Track', 'Genre', 'MediaType', 
-    'Playlist', 'PlaylistTrack', 'Invoice', 'InvoiceLine', 
-    'Customer', 'Employee'
-]
+# 2. Download the actual SQLite file from the repo you found
+url = "https://github.com/lerocha/chinook-database/raw/master/ChinookDatabase/DataSources/Chinook_Sqlite.sqlite"
+db_path = "chinook.sqlite"
 
-# Base URL for raw CSVs (stable GitHub source)
-base_url = "https://raw.githubusercontent.com/lerocha/chinook-database/master/DataSources/"
+print("Downloading Chinook database...")
+r = requests.get(url)
+with open(db_path, 'wb') as f:
+    f.write(r.content)
+
+# 3. Connect and export each table to CSV
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
+cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+tables = [t[0] for t in cursor.fetchall() if t[0] != 'sqlite_sequence']
+
+print(f"Found {len(tables)} tables. Exporting to seeds/...")
 
 for table in tables:
-    print(f"Fetching {table}...")
-    # Chinook uses different extensions for different versions, 
-    # but the .csv files are readily available in many repos.
-    # We will use the Kaggle-exported CSV structures for simplicity:
-    url = f"https://raw.githubusercontent.com/lerocha/chinook-database/master/DataSources/ChinookData.json"
-    # Actually, let's use a dedicated CSV repo for zero-friction
-    csv_url = f"https://raw.githubusercontent.com/yields-io/chinook-dataset/master/data/{table}.csv"
-    
-    try:
-        df = pd.read_csv(csv_url)
-        df.to_csv(f"seeds/{table.lower()}.csv", index=False)
-    except:
-        print(f"Could not find {table} at that URL, trying alternative...")
+    df = pd.read_sql_query(f'SELECT * FROM "{table}"', conn)
+    # Save to CSV (dbt seed requires .csv extension)
+    df.to_csv(f"seeds/{table}.csv", index=False)
+    print(f"  - Created seeds/{table}.csv")
 
-print("Done! Check your /seeds folder.")
+conn.close()
+os.remove(db_path) # Clean up the sqlite file
+print("\nDone! You can now run 'dbt seed'.")
