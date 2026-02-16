@@ -86,21 +86,30 @@ yoy_text, yoy_color = growth_metric(yoy)
 col5.metric("Country YoY Growth", yoy_text, delta_color=yoy_color)
 
 # -----------------------------
+# -----------------------------
 # 6. Top Genres per Country Chart
 # -----------------------------
 st.subheader("Top Genres per Country (Top 5)")
 if 'genre_revenue_country' in country_df.columns:
+    top5 = country_df.sort_values('genre_revenue_country', ascending=False).head(5)
+
     hover_cols = ['genre_name', 'genre_revenue_country']
     for col in ['genre_ytd_revenue','genre_market_share_pct','genre_yoy_growth_pct']:
-        if col in country_df.columns:
+        if col in top5.columns:
             hover_cols.append(col)
 
+    # Prepare text column safely
+    if 'genre_market_share_pct' in top5.columns:
+        top5['text_label'] = top5['genre_market_share_pct'].apply(lambda x: f"{x*100:.1f}%")
+    else:
+        top5['text_label'] = None
+
     genre_chart = px.bar(
-        country_df.sort_values('genre_revenue_country', ascending=False).head(5),
+        top5,
         x="genre_name",
         y="genre_revenue_country",
         color="genre_revenue_country",
-        text=country_df['genre_market_share_pct'].apply(lambda x: f"{x*100:.1f}%") if 'genre_market_share_pct' in country_df.columns else None,
+        text='text_label',
         hover_data=hover_cols
     )
     genre_chart.update_layout(showlegend=False)
