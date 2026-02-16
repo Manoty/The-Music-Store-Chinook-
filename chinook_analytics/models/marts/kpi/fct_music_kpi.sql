@@ -11,7 +11,11 @@ country_kpi as (
         sum(total_revenue) as country_revenue,
         rank() over (partition by revenue_month order by sum(total_revenue) desc) as country_rank,
         lag(sum(total_revenue)) over (partition by country order by revenue_month) as prev_month_revenue,
-        lag(sum(total_revenue), 12) over (partition by country order by revenue_month) as prev_year_revenue
+        lag(sum(total_revenue), 12) over (partition by country order by revenue_month) as prev_year_revenue,
+        sum(sum(total_revenue)) over (
+            partition by country, date_trunc('year', revenue_month)
+            order by revenue_month
+        ) as country_ytd_revenue
     from genre_country
     group by revenue_month, country
 ),
@@ -37,12 +41,16 @@ genre_country_kpi as (
         genre_name,
         total_revenue as genre_revenue_country,
         genre_market_share_pct,
-        genre_market_share_rank
+        genre_market_share_rank,
+        sum(total_revenue) over (
+            partition by country, genre_name, date_trunc('year', revenue_month)
+            order by revenue_month
+        ) as genre_ytd_revenue
     from genre_country
     where genre_market_share_rank <= 5
 ),
 
--- Top customers per country
+-- Top customers per country (Top 3)
 top_customers as (
     select
         c.customer_id,
@@ -53,6 +61,13 @@ top_customers as (
     join {{ ref('int_sales__invoice_items') }} il
         on c.customer_id = il.customer_id
     group by c.customer_id, c.country
+),
+
+-- Keep only Top N countries (example: 5) for dashboard clarity
+top_countries as (
+    select *
+    from country_kpi
+    where country_rank <= 5
 )
 
 select
@@ -61,19 +76,21 @@ select
     gc.genre_name,
 
     -- Country KPIs
-    ck.country_revenue,
-    ck.country_rank,
-    ck.prev_month_revenue,
-    case when ck.prev_month_revenue is null or ck.prev_month_revenue = 0 then null
-         else (ck.country_revenue - ck.prev_month_revenue) / ck.prev_month_revenue
+    tc.country_revenue,
+    tc.country_rank,
+    tc.prev_month_revenue,
+    case when tc.prev_month_revenue is null or tc.prev_month_revenue = 0 then null
+         else (tc.country_revenue - tc.prev_month_revenue) / tc.prev_month_revenue
     end as country_mom_growth_pct,
-    ck.prev_year_revenue,
-    case when ck.prev_year_revenue is null or ck.prev_year_revenue = 0 then null
-         else (ck.country_revenue - ck.prev_year_revenue) / ck.prev_year_revenue
+    tc.prev_year_revenue,
+    case when tc.prev_year_revenue is null or tc.prev_year_revenue = 0 then null
+         else (tc.country_revenue - tc.prev_year_revenue) / tc.prev_year_revenue
     end as country_yoy_growth_pct,
+    tc.country_ytd_revenue,
 
     -- Genre KPIs per country
     gc.genre_revenue_country,
+    gc.genre_ytd_revenue,
     gc.genre_market_share_pct,
     gc.genre_market_share_rank,
 
@@ -89,18 +106,22 @@ select
          else (gk.genre_revenue_global - gk.prev_year_genre_revenue_global) / gk.prev_year_genre_revenue_global
     end as genre_yoy_growth_pct,
 
-    -- Top customer context
-    tc.customer_id as top_customer_id,
-    tc.lifetime_revenue as top_customer_ltv,
-    tc.customer_rank as top_customer_rank_in_country
+    -- Top customer contribution
+    tcust.customer_id as top_customer_id,
+    tcust.lifetime_revenue as top_customer_ltv,
+    tcust.customer_rank as top_customer_rank_in_country,
+    case 
+        when tcust.lifetime_revenue is null or tc.country_revenue = 0 then null
+        else tcust.lifetime_revenue / tc.country_revenue
+    end as top_customer_contribution_pct
 
 from genre_country_kpi gc
-left join country_kpi ck
-    on gc.revenue_month = ck.revenue_month
-   and gc.country = ck.country
+left join top_countries tc
+    on gc.revenue_month = tc.revenue_month
+   and gc.country = tc.country
 left join genre_kpi gk
     on gc.revenue_month = gk.revenue_month
    and gc.genre_name = gk.genre_name
-left join top_customers tc
-    on gc.country = tc.country
-   and tc.customer_rank <= 3  -- top 3 customers per country
+left join top_customers tcust
+    on gc.country = tcust.country
+   and tcust.customer_rank <= 3
