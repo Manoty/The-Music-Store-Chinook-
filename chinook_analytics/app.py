@@ -78,7 +78,6 @@ top_ltv = country_df['top_customer_ltv'].max() if 'top_customer_ltv' in country_
 top_contrib = country_df['top_customer_contribution_pct'].max() if 'top_customer_contribution_pct' in country_df.columns else None
 yoy = country_df['country_yoy_growth_pct'].mean() if 'country_yoy_growth_pct' in country_df.columns else None
 
-# Display KPIs with color-coded arrows
 col1.metric("Country Revenue", f"${country_revenue:,.0f}" if country_revenue else "N/A")
 col2.metric("Top Genre Revenue", f"${top_genre_revenue:,.0f}" if top_genre_revenue else "N/A")
 col3.metric("Top Customer LTV", f"${top_ltv:,.0f}" if top_ltv else "N/A")
@@ -87,22 +86,30 @@ yoy_text, yoy_color = growth_metric(yoy)
 col5.metric("Country YoY Growth", yoy_text, delta_color=yoy_color)
 
 # -----------------------------
-# 6. Charts with Tooltips & Hover
+# 6. Top Genres per Country Chart
 # -----------------------------
 st.subheader("Top Genres per Country (Top 5)")
 if 'genre_revenue_country' in country_df.columns:
+    hover_cols = ['genre_name', 'genre_revenue_country']
+    if 'genre_ytd_revenue' in country_df.columns:
+        hover_cols.append('genre_ytd_revenue')
+    if 'genre_market_share_pct' in country_df.columns:
+        hover_cols.append('genre_market_share_pct')
+
     genre_chart = px.bar(
         country_df,
         x="genre_name",
         y="genre_revenue_country",
         color="genre_revenue_country",
         text=country_df['genre_market_share_pct'].apply(lambda x: f"{x*100:.1f}%") if 'genre_market_share_pct' in country_df.columns else None,
-        hover_data=["genre_name", "genre_revenue_country", "genre_ytd_revenue", "genre_market_share_pct"]
+        hover_data=hover_cols
     )
     genre_chart.update_layout(showlegend=False)
     st.plotly_chart(genre_chart, width='stretch')
 
-# Country Revenue Trend
+# -----------------------------
+# 7. Country Revenue Trend
+# -----------------------------
 st.subheader("Country Revenue Trend")
 revenue_cols = ['country_revenue']
 if 'country_ytd_revenue' in top_countries_df.columns:
@@ -132,7 +139,9 @@ if 'country_ytd_revenue' in country_trend.columns:
 fig.update_layout(title=f"{selected_country} Revenue & YTD Trend", xaxis_title="Month", yaxis_title="Revenue")
 st.plotly_chart(fig, width='stretch')
 
-# Top Customers
+# -----------------------------
+# 8. Top Customers
+# -----------------------------
 st.subheader("Top Customers")
 if 'top_customer_ltv' in country_df.columns:
     top_customers = country_df[['top_customer_id', 'top_customer_ltv', 'top_customer_contribution_pct']].drop_duplicates()
@@ -147,11 +156,13 @@ if 'top_customer_ltv' in country_df.columns:
             y='top_customer_ltv',
             text='label',
             color='top_customer_ltv',
-            hover_data=["top_customer_id", "top_customer_ltv", "top_customer_contribution_pct"]
+            hover_data=[c for c in ['top_customer_id', 'top_customer_ltv', 'top_customer_contribution_pct'] if c in top_customers.columns]
         )
         st.plotly_chart(customer_chart, width='stretch')
 
-# Global Genre Revenue Trend
+# -----------------------------
+# 9. Global Genre Revenue Trend
+# -----------------------------
 st.subheader("Global Genre Revenue Trend")
 if 'genre_revenue_global' in df.columns:
     genre_trend = df.groupby(['revenue_month', 'genre_name'])['genre_revenue_global'].sum().reset_index()
@@ -160,7 +171,7 @@ if 'genre_revenue_global' in df.columns:
         selected_genre_trend,
         x='revenue_month',
         y='genre_revenue_global',
-        hover_data=["revenue_month", "genre_revenue_global"],
+        hover_data=[c for c in ['revenue_month', 'genre_revenue_global'] if c in selected_genre_trend.columns],
         title=f"Global Revenue Trend for {selected_genre}"
     )
     st.plotly_chart(fig_genre, width='stretch')
