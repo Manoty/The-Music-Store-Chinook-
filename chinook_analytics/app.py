@@ -55,12 +55,12 @@ top_countries_df = df[df['country_rank'] <= top_n_countries]
 country_df = top_countries_df[top_countries_df['country'] == selected_country]
 
 # -----------------------------
-# 5. KPI Cards with Safe Defaults
+# 5. KPI Cards with Trend Arrows
 # -----------------------------
 st.subheader(f"Top KPIs for {selected_country}")
 
 def growth_metric(val):
-    if val is None or pd.isna(val):
+    if val is None:
         return "N/A", "gray"
     elif val > 0:
         return f"{val*100:.2f}% ↑", "green"
@@ -71,23 +71,21 @@ def growth_metric(val):
 
 col1, col2, col3, col4, col5 = st.columns(5)
 
-# --- Safe KPI values with fallbacks ---
-country_revenue = country_df['country_revenue'].sum() if 'country_revenue' in country_df.columns else 0
-top_genre_revenue = country_df['genre_revenue_country'].max() if 'genre_revenue_country' in country_df.columns else 0
-top_ltv = country_df['top_customer_ltv'].max() if 'top_customer_ltv' in country_df.columns else 0
-top_contrib = country_df['top_customer_contribution_pct'].max() if 'top_customer_contribution_pct' in country_df.columns else 0
-yoy = country_df['country_yoy_growth_pct'].mean() if 'country_yoy_growth_pct' in country_df.columns else 0
+country_revenue = country_df['country_revenue'].sum() if 'country_revenue' in country_df.columns else None
+top_genre_revenue = country_df['genre_revenue_country'].max() if 'genre_revenue_country' in country_df.columns else None
+top_ltv = country_df['top_customer_ltv'].max() if 'top_customer_ltv' in country_df.columns else None
+top_contrib = country_df['top_customer_contribution_pct'].max() if 'top_customer_contribution_pct' in country_df.columns else None
+yoy = country_df['country_yoy_growth_pct'].mean() if 'country_yoy_growth_pct' in country_df.columns else None
 
-col1.metric("Country Revenue", f"${country_revenue:,.0f}")
-col2.metric("Top Genre Revenue", f"${top_genre_revenue:,.0f}")
-col3.metric("Top Customer LTV", f"${top_ltv:,.0f}")
-col4.metric("Top Customer Contribution", f"{top_contrib*100:.2f}%")
+col1.metric("Country Revenue", f"${country_revenue:,.0f}" if country_revenue else "N/A")
+col2.metric("Top Genre Revenue", f"${top_genre_revenue:,.0f}" if top_genre_revenue else "N/A")
+col3.metric("Top Customer LTV", f"${top_ltv:,.0f}" if top_ltv else "N/A")
+col4.metric("Top Customer Contribution", f"{top_contrib*100:.2f}%" if top_contrib else "N/A")
 yoy_text, yoy_color = growth_metric(yoy)
 col5.metric("Country YoY Growth", yoy_text, delta_color=yoy_color)
 
 # -----------------------------
-# -----------------------------
-# 6. Top Genres per Country Chart
+# 6. Top Genres per Country Chart (Top 5)
 # -----------------------------
 st.subheader("Top Genres per Country (Top 5)")
 if 'genre_revenue_country' in country_df.columns:
@@ -98,7 +96,6 @@ if 'genre_revenue_country' in country_df.columns:
         if col in top5.columns:
             hover_cols.append(col)
 
-    # Prepare text column safely
     if 'genre_market_share_pct' in top5.columns:
         top5['text_label'] = top5['genre_market_share_pct'].apply(lambda x: f"{x*100:.1f}%")
     else:
@@ -156,11 +153,11 @@ if 'country_revenue' in country_trend.columns:
     st.plotly_chart(fig, width='stretch')
 
 # -----------------------------
-# 8. Top Customers Table
+# 8. Top Customers with Contribution & Growth
 # -----------------------------
 st.subheader("Top Customers")
 if 'top_customer_ltv' in country_df.columns:
-    top_customers = country_df[['top_customer_id', 'top_customer_ltv', 'top_customer_contribution_pct','top_customer_yoy_growth_pct']].drop_duplicates()
+    top_customers = country_df[['top_customer_id', 'top_customer_ltv', 'top_customer_contribution_pct', 'top_customer_yoy_growth_pct']].drop_duplicates()
     if not top_customers.empty:
         top_customers = top_customers.nlargest(5, 'top_customer_ltv')
         top_customers['label'] = top_customers.apply(
@@ -193,7 +190,7 @@ if 'genre_revenue_global' in df.columns:
         selected_genre_trend,
         x='revenue_month',
         y='genre_revenue_global',
-        hover_data=[c for c in ['revenue_month','genre_revenue_global'] if c in selected_genre_trend.columns],
+        hover_data=[c for c in ['revenue_month', 'genre_revenue_global'] if c in selected_genre_trend.columns],
         title=f"Global Revenue Trend for {selected_genre}"
     )
     st.plotly_chart(fig_genre, width='stretch')
