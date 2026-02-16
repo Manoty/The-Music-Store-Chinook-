@@ -1,3 +1,8 @@
+{{ config(
+    materialized='table'
+) }}
+
+
 with genre_country as (
     select *
     from {{ ref('fct_genre_country_month') }}
