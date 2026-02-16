@@ -1,6 +1,6 @@
 with base as (
 
-    select * from {{ ref('int_sales__genre_revenue') }}
+    select * from {{ ref('int_sales_genre_revenue') }}
 
 ),
 
