@@ -2,7 +2,6 @@
     materialized='table'
 ) }}
 
-
 with genre_country as (
     select *
     from {{ ref('fct_genre_country_month') }}
@@ -68,7 +67,7 @@ top_customers as (
     group by c.customer_id, c.country
 ),
 
--- Keep only Top N countries (example: 5) for dashboard clarity
+-- Top N countries filter (adjustable, example: 5)
 top_countries as (
     select *
     from country_kpi
