@@ -418,30 +418,7 @@ if {"top_customer_id", "top_customer_ltv"}.issubset(source_df.columns):
 else:
     st.warning("Required customer columns not found in dataset.")
 
-st.subheader("💰 Top Customers Contribution %")
 
-if {"top_customer_id", "top_customer_contribution_pct"}.issubset(source_df.columns):
-
-    contrib_df = (
-        source_df.loc[:, ["top_customer_id", "top_customer_contribution_pct"]]
-        .dropna()
-        .sort_values("top_customer_contribution_pct", ascending=False)
-        .head(10)
-        .copy()
-    )
-
-    if not contrib_df.empty:
-        fig = px.pie(
-            contrib_df,
-            names="top_customer_id",
-            values="top_customer_contribution_pct",
-            title="Top Customer Contribution %",
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info("No customer contribution data available.")
-else:
-    st.warning("Required customer contribution columns not found.")
 
 
 # 🔹 1️⃣ Top 10 Genres by Revenue
