@@ -42,11 +42,22 @@ def load_data():
     return conn.execute("SELECT * FROM fct_music_kpi").df()
 
 def run_dbt_and_reload():
-    st.info("Running dbt models...")
-    subprocess.run(["dbt", "run"], check=True)
-    st.success("dbt run completed. Reloading fresh data...")
-    load_data.clear()  # 🔥 invalidate cache
-    return load_data()
+    try:
+        st.info("Running dbt models...")
+
+        subprocess.run(
+            ["dbt", "run"],
+            check=True,
+            cwd="C:/kev/chinook_music/chinook"  # 👈 dbt project root
+        )
+
+        st.success("dbt run completed. Reloading fresh data...")
+        load_data.clear()
+        return load_data()
+
+    except subprocess.CalledProcessError as e:
+        st.error("dbt run failed. Check terminal for details.")
+        st.stop()
 
 if st.button("🔄 Refresh Data (Run dbt)"):
     df = run_dbt_and_reload()
