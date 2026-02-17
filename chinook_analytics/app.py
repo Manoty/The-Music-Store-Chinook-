@@ -15,16 +15,22 @@ st.title("🎵 Music Store Executive Dashboard")
 st.markdown("Interactive KPIs, trends, top customers, with executive visuals & one-click dbt refresh")
 
 # -----------------------------
-# 2. Connect to DuckDB via dbt
+# 2. Connect to DuckDB via dbt (Cached)
 # -----------------------------
-dbt_profiles_path = os.path.expanduser("~/.dbt/profiles.yml")
-with open(dbt_profiles_path) as f:
-    profiles = yaml.safe_load(f)
+@st.cache_resource
+def get_connection():
+    dbt_profiles_path = os.path.expanduser("~/.dbt/profiles.yml")
+    with open(dbt_profiles_path) as f:
+        profiles = yaml.safe_load(f)
 
-profile_name = list(profiles.keys())[0]
-target_name = profiles[profile_name]['target']
-duckdb_path = profiles[profile_name]['outputs'][target_name]['path']
-conn = duckdb.connect(duckdb_path)
+    profile_name = list(profiles.keys())[0]
+    target_name = profiles[profile_name]['target']
+    duckdb_path = profiles[profile_name]['outputs'][target_name]['path']
+
+    return duckdb.connect(duckdb_path)
+
+conn = get_connection()
+
 
 # -----------------------------
 # 3. Refresh dbt & Load Data
