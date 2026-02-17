@@ -383,42 +383,6 @@ if 'genre_revenue_country' in country_df.columns and 'genre_revenue_global' in d
     )
     st.plotly_chart(fig_cmp, width='stretch')
 
-# 🔹 1️⃣ Top 10 Customers by LTV
-st.subheader("🏆 Top 10 Customers by LTV")
-
-source_df = country_df if "country_df" in locals() else df
-
-if {"top_customer_id", "top_customer_ltv"}.issubset(source_df.columns):
-
-    top_customers = (
-        source_df.loc[:, ["top_customer_id", "top_customer_ltv"]]
-        .dropna()
-        .groupby("top_customer_id", as_index=False)
-        .agg({"top_customer_ltv": "max"})
-        .sort_values("top_customer_ltv", ascending=False)
-        .head(10)
-        .copy()
-    )
-
-    if not top_customers.empty:
-
-        fig = px.bar(
-            top_customers,
-            x="top_customer_ltv",
-            y="top_customer_id",
-            orientation="h",
-            title="Top 10 Customers by Lifetime Value",
-        )
-
-        fig.update_layout(yaxis=dict(autorange="reversed"))
-        st.plotly_chart(fig, use_container_width=True)
-
-    else:
-        st.info("No customer LTV data available for this selection.")
-else:
-    st.warning("Required customer columns not found in dataset.")
-
-
 
 
 # 🔹 1️⃣ Top 10 Genres by Revenue
