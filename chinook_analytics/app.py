@@ -87,13 +87,13 @@ col5.metric("Country YoY Growth", yoy_text, delta_color=yoy_color)
 
 # -----------------------------
 ## -----------------------------
+# -----------------------------
 # 6. Top Genres per Country Chart
 # -----------------------------
 st.subheader("Top Genres per Country (Top 5)")
 
 if 'genre_revenue_country' in country_df.columns:
 
-    # Take top 5 genres safely
     top_genres = (
         country_df
         .sort_values("genre_revenue_country", ascending=False)
@@ -102,11 +102,28 @@ if 'genre_revenue_country' in country_df.columns:
         .copy()
     )
 
-    # Create safe label column INSIDE dataframe
+    # Add ranking
+    top_genres["rank"] = range(1, len(top_genres) + 1)
+
+    # Medal column
+    medal_map = {
+        1: "🥇",
+        2: "🥈",
+        3: "🥉"
+    }
+
+    top_genres["medal"] = top_genres["rank"].map(medal_map).fillna("")
+
+    # Display label with medal
+    top_genres["display_name"] = top_genres["medal"] + " " + top_genres["genre_name"]
+
+    # Market share label
     if 'genre_market_share_pct' in top_genres.columns:
         top_genres["market_share_label"] = (
-            top_genres["genre_market_share_pct"] * 100
-        ).round(1).astype(str) + "%"
+            (top_genres["genre_market_share_pct"] * 100)
+            .round(1)
+            .astype(str) + "%"
+        )
     else:
         top_genres["market_share_label"] = ""
 
@@ -122,7 +139,7 @@ if 'genre_revenue_country' in country_df.columns:
 
     genre_chart = px.bar(
         top_genres,
-        x="genre_name",
+        x="display_name",
         y="genre_revenue_country",
         color="genre_revenue_country",
         text="market_share_label",
@@ -132,6 +149,7 @@ if 'genre_revenue_country' in country_df.columns:
     genre_chart.update_layout(showlegend=False)
 
     st.plotly_chart(genre_chart, width='stretch')
+
 
 # -----------------------------
 # 7. Country Revenue Trend with MoM & YTD
