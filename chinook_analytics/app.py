@@ -33,20 +33,24 @@ conn = get_connection()
 
 
 # -----------------------------
+# -----------------------------
 # 3. Refresh dbt & Load Data
 # -----------------------------
+
+@st.cache_data
+def load_data():
+    return conn.execute("SELECT * FROM fct_music_kpi").df()
+
 def run_dbt_and_reload():
     st.info("Running dbt models...")
     subprocess.run(["dbt", "run"], check=True)
-    st.success("dbt run completed, reloading data...")
-    return conn.execute("SELECT * FROM fct_music_kpi").df()
+    st.success("dbt run completed. Reloading fresh data...")
+    load_data.clear()  # 🔥 invalidate cache
+    return load_data()
 
 if st.button("🔄 Refresh Data (Run dbt)"):
     df = run_dbt_and_reload()
 else:
-    @st.cache_data
-    def load_data():
-        return conn.execute("SELECT * FROM fct_music_kpi").df()
     df = load_data()
 
 # -----------------------------
