@@ -418,7 +418,7 @@ if {"top_customer_id", "top_customer_ltv"}.issubset(source_df.columns):
 else:
     st.warning("Required customer columns not found in dataset.")
 
-
+# 🔹 1️⃣ Top 10 Genres by Revenue
 st.subheader("🎸 Top 10 Genres by Revenue")
 
 source_df = country_df if "country_df" in locals() else df
