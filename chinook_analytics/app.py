@@ -144,6 +144,54 @@ else:
     st.info("No KPI data available for this country.")
 
 
+# -----------------------------
+# 5B. Executive Summary
+# -----------------------------
+st.subheader("📊 Executive Summary")
+
+summary_lines = []
+
+if country_revenue and country_revenue > 0:
+    summary_lines.append(
+        f"{selected_country} generated ${country_revenue:,.0f} in total revenue."
+    )
+
+if yoy is not None:
+    if yoy > 0:
+        summary_lines.append(
+            f"Revenue is growing at {yoy*100:.2f}% year-over-year, indicating positive momentum."
+        )
+    elif yoy < 0:
+        summary_lines.append(
+            f"Revenue declined by {abs(yoy*100):.2f}% year-over-year, signaling potential market pressure."
+        )
+
+if top_genre_revenue and top_genre_revenue > 0:
+    top_genre_name = (
+        country_df
+        .sort_values("genre_revenue_country", ascending=False)
+        .iloc[0]["genre_name"]
+        if "genre_name" in country_df.columns else "the leading genre"
+    )
+    summary_lines.append(
+        f"{top_genre_name} is the top-performing genre with ${top_genre_revenue:,.0f} in revenue."
+    )
+
+if top_contrib and top_contrib > 0:
+    if top_contrib > 0.25:
+        summary_lines.append(
+            f"Top customer contribution is {top_contrib*100:.2f}%, indicating revenue concentration risk."
+        )
+    else:
+        summary_lines.append(
+            f"Top customer contribution stands at {top_contrib*100:.2f}%, showing diversified revenue distribution."
+        )
+
+if summary_lines:
+    st.markdown(" ".join(summary_lines))
+else:
+    st.info("Not enough data available to generate executive summary.")
+
 
 ## -----------------------------
 # -----------------------------
