@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: fct_music_kpi
+    description: "Fact table with KPIs per country, genre, and customer."
+    columns:
+      - name: country
+        tests:
+          - not_null
+      - name: genre_name
+        tests:
+          - not_null
+      - name: country_revenue
+        tests:
+          - not_null
+          - accepted_range:
+              min: 0
+      - name: genre_revenue_country
+        tests:
+          - not_null
+          - accepted_range:
+              min: 0
+      - name: top_customer_ltv
+        tests:
+          - not_null
+          - accepted_range:
+              min: 0
+      - name: top_customer_contribution_pct
+        tests:
+          - not_null
+          - accepted_range:
+              min: 0
+              max: 1
+      - name: country_yoy_growth_pct
+        tests:
+          - accepted_range:
+              min: -1
+              max: 10  # allows for extreme growth
