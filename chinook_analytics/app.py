@@ -21,12 +21,7 @@ st.markdown(
 # -----------------------------
 @st.cache_resource
 def get_connection():
-    # Use project-relative path instead of ~
-    dbt_profiles_path = os.path.join(os.path.dirname(__file__), "dbt_profiles", "profiles.yml")
-    
-    if not os.path.exists(dbt_profiles_path):
-        raise FileNotFoundError(f"DBT profiles.yml not found at {dbt_profiles_path}")
-    
+    dbt_profiles_path = os.path.expanduser("~/.dbt/profiles.yml")
     with open(dbt_profiles_path) as f:
         profiles = yaml.safe_load(f)
 
@@ -35,6 +30,9 @@ def get_connection():
     duckdb_path = profiles[profile_name]['outputs'][target_name]['path']
 
     return duckdb.connect(duckdb_path)
+
+conn = get_connection()
+
 # -----------------------------
 # 3. Refresh dbt & Load Data
 # -----------------------------
