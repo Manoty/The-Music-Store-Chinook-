@@ -48,7 +48,7 @@ def run_dbt_and_reload():
         subprocess.run(
             ["dbt", "run"],
             check=True,
-            cwd="C:/kev/chinook_music/chinook"  # 👈 dbt project root
+            cwd="C:/kev/chinook_music/chinook/chinook_analytics"  # 👈 dbt project root
         )
 
         st.success("dbt run completed. Reloading fresh data...")
