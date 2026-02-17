@@ -479,3 +479,29 @@ if {"country", "country_revenue"}.issubset(df.columns):
         st.info("No country revenue data available.")
 else:
     st.warning("Required country columns not found in dataset.")
+
+
+st.subheader("📊 Global Genre Revenue Trend")
+
+if {"revenue_month", "genre_name", "genre_revenue_global"}.issubset(df.columns):
+
+    genre_trend_df = (
+        df.groupby(["revenue_month", "genre_name"], as_index=False)["genre_revenue_global"].sum()
+        .copy()
+    )
+
+    if not genre_trend_df.empty:
+        fig = px.line(
+            genre_trend_df,
+            x="revenue_month",
+            y="genre_revenue_global",
+            color="genre_name",
+            title="Global Genre Revenue Trend",
+            markers=True
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("No global genre revenue data available.")
+else:
+    st.warning("Required global genre columns not found.")
+
