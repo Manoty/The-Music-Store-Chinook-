@@ -150,7 +150,6 @@ if 'genre_revenue_country' in country_df.columns:
 
     st.plotly_chart(genre_chart, width='stretch')
 
-
 # -----------------------------
 # 7. Country Revenue Trend with MoM & YTD
 # -----------------------------
