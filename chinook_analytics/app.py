@@ -55,35 +55,63 @@ top_countries_df = df[df['country_rank'] <= top_n_countries]
 country_df = top_countries_df[top_countries_df['country'] == selected_country]
 
 # -----------------------------
-# 5. KPI Cards with Safe Defaults
+# -----------------------------
+# 5. KPI Cards with Conditional Styling
 # -----------------------------
 st.subheader(f"Top KPIs for {selected_country}")
 
-def growth_metric(val):
-    if val is None or pd.isna(val):
-        return "N/A", "gray"
-    elif val > 0:
-        return f"{val*100:.2f}% ↑", "green"
-    elif val < 0:
-        return f"{val*100:.2f}% ↓", "red"
-    else:
-        return "0%", "gray"
-
 col1, col2, col3, col4, col5 = st.columns(5)
 
-# --- Safe KPI values with fallbacks ---
+# Safe extraction
 country_revenue = country_df['country_revenue'].sum() if 'country_revenue' in country_df.columns else 0
 top_genre_revenue = country_df['genre_revenue_country'].max() if 'genre_revenue_country' in country_df.columns else 0
 top_ltv = country_df['top_customer_ltv'].max() if 'top_customer_ltv' in country_df.columns else 0
 top_contrib = country_df['top_customer_contribution_pct'].max() if 'top_customer_contribution_pct' in country_df.columns else 0
 yoy = country_df['country_yoy_growth_pct'].mean() if 'country_yoy_growth_pct' in country_df.columns else 0
 
-col1.metric("Country Revenue", f"${country_revenue:,.0f}")
-col2.metric("Top Genre Revenue", f"${top_genre_revenue:,.0f}")
-col3.metric("Top Customer LTV", f"${top_ltv:,.0f}")
-col4.metric("Top Customer Contribution", f"{top_contrib*100:.2f}%")
-yoy_text, yoy_color = growth_metric(yoy)
-col5.metric("Country YoY Growth", yoy_text, delta_color=yoy_color)
+# Revenue KPI
+col1.metric(
+    "Country Revenue",
+    f"${country_revenue:,.0f}",
+    delta="Healthy" if country_revenue > 0 else "No Revenue",
+    delta_color="normal" if country_revenue > 0 else "inverse"
+)
+
+# Top Genre Revenue
+col2.metric(
+    "Top Genre Revenue",
+    f"${top_genre_revenue:,.0f}",
+    delta="Strong" if top_genre_revenue > 0 else "Weak",
+    delta_color="normal" if top_genre_revenue > 0 else "inverse"
+)
+
+# LTV
+col3.metric(
+    "Top Customer LTV",
+    f"${top_ltv:,.0f}" if top_ltv > 0 else "N/A",
+    delta="High Value" if top_ltv > 0 else None,
+    delta_color="normal"
+)
+
+# Contribution %
+col4.metric(
+    "Top Customer Contribution",
+    f"{top_contrib*100:.2f}%" if top_contrib > 0 else "N/A",
+    delta="Dominant" if top_contrib > 0.20 else "Low",
+    delta_color="normal" if top_contrib > 0.20 else "inverse"
+)
+
+# YoY Growth
+if yoy != 0:
+    col5.metric(
+        "Country YoY Growth",
+        f"{yoy*100:.2f}%",
+        delta=f"{yoy*100:.2f}%",
+        delta_color="normal" if yoy > 0 else "inverse"
+    )
+else:
+    col5.metric("Country YoY Growth", "N/A")
+
 
 # -----------------------------
 ## -----------------------------
