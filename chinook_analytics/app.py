@@ -383,25 +383,39 @@ if 'genre_revenue_country' in country_df.columns and 'genre_revenue_global' in d
     )
     st.plotly_chart(fig_cmp, width='stretch')
 
+# 🔹 1️⃣ Top 10 Customers by LTV
 st.subheader("🏆 Top 10 Customers by LTV")
 
 if "top_customer_id" in df.columns and "top_customer_ltv" in df.columns:
 
+    # Slice safely and drop missing or duplicate entries
     top_customers = (
-        df[["top_customer_id", "top_customer_ltv"]]
+        df.loc[:, ["top_customer_id", "top_customer_ltv"]]
         .dropna()
         .drop_duplicates()
         .sort_values("top_customer_ltv", ascending=False)
         .head(10)
+        .copy()  # ✅ copy to avoid SettingWithCopyWarning
     )
 
+    # Optional: create a label column for hover or text display
+    top_customers.loc[:, "label"] = top_customers["top_customer_ltv"].apply(lambda x: f"${x:,.0f}")
+
+    # Plot horizontal bar chart
     fig = px.bar(
         top_customers,
         x="top_customer_ltv",
         y="top_customer_id",
         orientation="h",
-        title="Top 10 Customers by Lifetime Value"
+        text="label",  # show LTV on bars
+        title="Top 10 Customers by Lifetime Value",
+        hover_data={"top_customer_id": True, "top_customer_ltv": ":,.0f"}  # formatted hover
     )
 
-    fig.update_layout(yaxis=dict(autorange="reversed"))
+    fig.update_layout(
+        yaxis=dict(autorange="reversed"),  # largest on top
+        xaxis_title="Lifetime Value ($)",
+        yaxis_title="Customer ID"
+    )
+
     st.plotly_chart(fig, use_container_width=True)
