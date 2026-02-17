@@ -12,7 +12,9 @@ import subprocess
 # -----------------------------
 st.set_page_config(page_title="Music Store Executive Dashboard", layout="wide")
 st.title("🎵 Music Store Executive Dashboard")
-st.markdown("Interactive KPIs, trends, top customers, with executive visuals & one-click dbt refresh")
+st.markdown(
+    "Interactive KPIs, trends, top customers, with executive visuals & one-click dbt refresh"
+)
 
 # -----------------------------
 # 2. Connect to DuckDB via dbt (Cached)
@@ -31,12 +33,9 @@ def get_connection():
 
 conn = get_connection()
 
-
-# -----------------------------
 # -----------------------------
 # 3. Refresh dbt & Load Data
 # -----------------------------
-
 @st.cache_data
 def load_data():
     return conn.execute("SELECT * FROM fct_music_kpi").df()
@@ -55,7 +54,7 @@ def run_dbt_and_reload():
         load_data.clear()
         return load_data()
 
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         st.error("dbt run failed. Check terminal for details.")
         st.stop()
 
@@ -63,6 +62,12 @@ if st.button("🔄 Refresh Data (Run dbt)"):
     df = run_dbt_and_reload()
 else:
     df = load_data()
+
+# -----------------------------
+# Optional: Debug panel to see columns
+# -----------------------------
+st.sidebar.subheader("Debug: Available Columns")
+st.sidebar.write(df.columns.tolist())
 
 # -----------------------------
 # 4. Sidebar Filters
@@ -76,12 +81,19 @@ top_countries_df = df[df['country_rank'] <= top_n_countries]
 country_df = top_countries_df[top_countries_df['country'] == selected_country]
 
 # -----------------------------
-# -----------------------------
-# 5. KPI Cards (Auto-Hide Empty)
+# 5. KPI Cards (Auto-Hide Empty + K/M formatting)
 # -----------------------------
 st.subheader(f"Top KPIs for {selected_country}")
 
-# Extract values safely
+def format_currency(val):
+    """Format number with K / M suffix"""
+    if val >= 1_000_000:
+        return f"${val/1_000_000:,.1f}M"
+    elif val >= 1_000:
+        return f"${val/1_000:,.1f}K"
+    else:
+        return f"${val:,.0f}"
+
 country_revenue = country_df['country_revenue'].sum() if 'country_revenue' in country_df.columns else None
 top_genre_revenue = country_df['genre_revenue_country'].max() if 'genre_revenue_country' in country_df.columns else None
 top_ltv = country_df['top_customer_ltv'].max() if 'top_customer_ltv' in country_df.columns else None
@@ -93,7 +105,7 @@ kpis = []
 if country_revenue and country_revenue > 0:
     kpis.append({
         "label": "Country Revenue",
-        "value": f"${country_revenue:,.0f}",
+        "value": format_currency(country_revenue),
         "delta": "Healthy",
         "color": "normal"
     })
@@ -101,7 +113,7 @@ if country_revenue and country_revenue > 0:
 if top_genre_revenue and top_genre_revenue > 0:
     kpis.append({
         "label": "Top Genre Revenue",
-        "value": f"${top_genre_revenue:,.0f}",
+        "value": format_currency(top_genre_revenue),
         "delta": "Strong",
         "color": "normal"
     })
@@ -109,7 +121,7 @@ if top_genre_revenue and top_genre_revenue > 0:
 if top_ltv and top_ltv > 0:
     kpis.append({
         "label": "Top Customer LTV",
-        "value": f"${top_ltv:,.0f}",
+        "value": format_currency(top_ltv),
         "delta": "High Value",
         "color": "normal"
     })
@@ -130,7 +142,6 @@ if yoy is not None:
         "color": "normal" if yoy > 0 else "inverse"
     })
 
-# Create dynamic columns
 if kpis:
     cols = st.columns(len(kpis))
     for col, kpi in zip(cols, kpis):
@@ -143,7 +154,6 @@ if kpis:
 else:
     st.info("No KPI data available for this country.")
 
-
 # -----------------------------
 # 5B. Executive Summary
 # -----------------------------
@@ -152,45 +162,44 @@ st.subheader("📊 Executive Summary")
 summary_lines = []
 
 if country_revenue and country_revenue > 0:
-    summary_lines.append(
-        f"{selected_country} generated ${country_revenue:,.0f} in total revenue."
-    )
+    summary_lines.append(f"{selected_country} generated {format_currency(country_revenue)} in total revenue.")
 
 if yoy is not None:
     if yoy > 0:
-        summary_lines.append(
-            f"Revenue is growing at {yoy*100:.2f}% year-over-year, indicating positive momentum."
-        )
+        summary_lines.append(f"Revenue is growing at {yoy*100:.2f}% year-over-year, indicating positive momentum.")
     elif yoy < 0:
-        summary_lines.append(
-            f"Revenue declined by {abs(yoy*100):.2f}% year-over-year, signaling potential market pressure."
-        )
+        summary_lines.append(f"Revenue declined by {abs(yoy*100):.2f}% year-over-year, signaling potential market pressure.")
 
 if top_genre_revenue and top_genre_revenue > 0:
     top_genre_name = (
-        country_df
-        .sort_values("genre_revenue_country", ascending=False)
-        .iloc[0]["genre_name"]
-        if "genre_name" in country_df.columns else "the leading genre"
+        country_df.sort_values("genre_revenue_country", ascending=False)
+        .iloc[0]["genre_name"] if "genre_name" in country_df.columns else "the leading genre"
     )
-    summary_lines.append(
-        f"{top_genre_name} is the top-performing genre with ${top_genre_revenue:,.0f} in revenue."
-    )
+    summary_lines.append(f"{top_genre_name} is the top-performing genre with {format_currency(top_genre_revenue)} in revenue.")
 
 if top_contrib and top_contrib > 0:
     if top_contrib > 0.25:
-        summary_lines.append(
-            f"Top customer contribution is {top_contrib*100:.2f}%, indicating revenue concentration risk."
-        )
+        summary_lines.append(f"Top customer contribution is {top_contrib*100:.2f}%, indicating revenue concentration risk.")
     else:
-        summary_lines.append(
-            f"Top customer contribution stands at {top_contrib*100:.2f}%, showing diversified revenue distribution."
-        )
+        summary_lines.append(f"Top customer contribution stands at {top_contrib*100:.2f}%, showing diversified revenue distribution.")
 
 if summary_lines:
     st.markdown(" ".join(summary_lines))
 else:
     st.info("Not enough data available to generate executive summary.")
+
+# -----------------------------
+# The rest of your app (charts, top customers, global genre trend, comparison) remains unchanged
+# -----------------------------
+# You can keep the rest of your working code for:
+# - Top Genres per Country
+# - Country Revenue Trend
+# - Top Customers
+# - Global Genre Revenue Trend
+# - Country vs Global Comparison
+# without modification.
+
+
 
 
 ## -----------------------------
