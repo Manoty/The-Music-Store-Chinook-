@@ -86,33 +86,51 @@ yoy_text, yoy_color = growth_metric(yoy)
 col5.metric("Country YoY Growth", yoy_text, delta_color=yoy_color)
 
 # -----------------------------
-# -----------------------------
+## -----------------------------
 # 6. Top Genres per Country Chart
 # -----------------------------
 st.subheader("Top Genres per Country (Top 5)")
+
 if 'genre_revenue_country' in country_df.columns:
-    top5 = country_df.sort_values('genre_revenue_country', ascending=False).head(5)
 
-    hover_cols = ['genre_name', 'genre_revenue_country']
-    for col in ['genre_ytd_revenue','genre_market_share_pct','genre_yoy_growth_pct']:
-        if col in top5.columns:
-            hover_cols.append(col)
+    # Take top 5 genres safely
+    top_genres = (
+        country_df
+        .sort_values("genre_revenue_country", ascending=False)
+        .drop_duplicates(subset=["genre_name"])
+        .head(5)
+        .copy()
+    )
 
-    # Prepare text column safely
-    if 'genre_market_share_pct' in top5.columns:
-        top5['text_label'] = top5['genre_market_share_pct'].apply(lambda x: f"{x*100:.1f}%")
+    # Create safe label column INSIDE dataframe
+    if 'genre_market_share_pct' in top_genres.columns:
+        top_genres["market_share_label"] = (
+            top_genres["genre_market_share_pct"] * 100
+        ).round(1).astype(str) + "%"
     else:
-        top5['text_label'] = None
+        top_genres["market_share_label"] = ""
+
+    hover_cols = [
+        c for c in [
+            "genre_name",
+            "genre_revenue_country",
+            "genre_market_share_pct",
+            "genre_yoy_growth_pct"
+        ]
+        if c in top_genres.columns
+    ]
 
     genre_chart = px.bar(
-        top5,
+        top_genres,
         x="genre_name",
         y="genre_revenue_country",
         color="genre_revenue_country",
-        text='text_label',
+        text="market_share_label",
         hover_data=hover_cols
     )
+
     genre_chart.update_layout(showlegend=False)
+
     st.plotly_chart(genre_chart, width='stretch')
 
 # -----------------------------
@@ -203,12 +221,9 @@ if 'genre_revenue_global' in df.columns:
 # -----------------------------
 st.subheader(f"{selected_genre} - Country vs Global Comparison")
 if 'genre_revenue_country' in country_df.columns and 'genre_revenue_global' in df.columns:
-    col1.metric("Country Revenue", f"${country_revenue:,.0f}")
-    col2.metric("Top Genre Revenue", f"${top_genre_revenue:,.0f}")
-    col3.metric("Top Customer LTV", f"${top_ltv:,.0f}" if top_ltv > 0 else "N/A")
-    col4.metric("Top Customer Contribution", f"{top_contrib*100:.2f}%" if top_contrib > 0 else "N/A")
-    yoy_text, yoy_color = growth_metric(yoy)
-    col5.metric("Country YoY Growth", yoy_text, delta_color=yoy_color)
+    country_genre_trend = country_df[country_df['genre_name'] == selected_genre].groupby('revenue_month')['genre_revenue_country'].sum().reset_index()
+    global_genre_trend = df[df['genre_name'] == selected_genre].groupby('revenue_month')['genre_revenue_global'].sum().reset_index()
+    trend_merge = pd.merge(country_genre_trend, global_genre_trend, on='revenue_month', how='outer').fillna(0)
 
     fig_cmp = go.Figure()
     fig_cmp.add_trace(go.Scatter(
