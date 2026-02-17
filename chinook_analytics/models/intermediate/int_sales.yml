@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: int_sales
+    description: "Intermediate sales facts joining invoices and customers."
+    columns:
+      - name: invoice_id
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: total
+        tests:
+          - not_null
+          - accepted_range:
+              min: 0
