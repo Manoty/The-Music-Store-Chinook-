@@ -56,64 +56,74 @@ country_df = top_countries_df[top_countries_df['country'] == selected_country]
 
 # -----------------------------
 # -----------------------------
-# 5. KPI Cards with Conditional Styling
+# 5. KPI Cards (Auto-Hide Empty)
 # -----------------------------
 st.subheader(f"Top KPIs for {selected_country}")
 
-col1, col2, col3, col4, col5 = st.columns(5)
+# Extract values safely
+country_revenue = country_df['country_revenue'].sum() if 'country_revenue' in country_df.columns else None
+top_genre_revenue = country_df['genre_revenue_country'].max() if 'genre_revenue_country' in country_df.columns else None
+top_ltv = country_df['top_customer_ltv'].max() if 'top_customer_ltv' in country_df.columns else None
+top_contrib = country_df['top_customer_contribution_pct'].max() if 'top_customer_contribution_pct' in country_df.columns else None
+yoy = country_df['country_yoy_growth_pct'].mean() if 'country_yoy_growth_pct' in country_df.columns else None
 
-# Safe extraction
-country_revenue = country_df['country_revenue'].sum() if 'country_revenue' in country_df.columns else 0
-top_genre_revenue = country_df['genre_revenue_country'].max() if 'genre_revenue_country' in country_df.columns else 0
-top_ltv = country_df['top_customer_ltv'].max() if 'top_customer_ltv' in country_df.columns else 0
-top_contrib = country_df['top_customer_contribution_pct'].max() if 'top_customer_contribution_pct' in country_df.columns else 0
-yoy = country_df['country_yoy_growth_pct'].mean() if 'country_yoy_growth_pct' in country_df.columns else 0
+kpis = []
 
-# Revenue KPI
-col1.metric(
-    "Country Revenue",
-    f"${country_revenue:,.0f}",
-    delta="Healthy" if country_revenue > 0 else "No Revenue",
-    delta_color="normal" if country_revenue > 0 else "inverse"
-)
+if country_revenue and country_revenue > 0:
+    kpis.append({
+        "label": "Country Revenue",
+        "value": f"${country_revenue:,.0f}",
+        "delta": "Healthy",
+        "color": "normal"
+    })
 
-# Top Genre Revenue
-col2.metric(
-    "Top Genre Revenue",
-    f"${top_genre_revenue:,.0f}",
-    delta="Strong" if top_genre_revenue > 0 else "Weak",
-    delta_color="normal" if top_genre_revenue > 0 else "inverse"
-)
+if top_genre_revenue and top_genre_revenue > 0:
+    kpis.append({
+        "label": "Top Genre Revenue",
+        "value": f"${top_genre_revenue:,.0f}",
+        "delta": "Strong",
+        "color": "normal"
+    })
 
-# LTV
-col3.metric(
-    "Top Customer LTV",
-    f"${top_ltv:,.0f}" if top_ltv > 0 else "N/A",
-    delta="High Value" if top_ltv > 0 else None,
-    delta_color="normal"
-)
+if top_ltv and top_ltv > 0:
+    kpis.append({
+        "label": "Top Customer LTV",
+        "value": f"${top_ltv:,.0f}",
+        "delta": "High Value",
+        "color": "normal"
+    })
 
-# Contribution %
-col4.metric(
-    "Top Customer Contribution",
-    f"{top_contrib*100:.2f}%" if top_contrib > 0 else "N/A",
-    delta="Dominant" if top_contrib > 0.20 else "Low",
-    delta_color="normal" if top_contrib > 0.20 else "inverse"
-)
+if top_contrib and top_contrib > 0:
+    kpis.append({
+        "label": "Top Customer Contribution",
+        "value": f"{top_contrib*100:.2f}%",
+        "delta": "Dominant" if top_contrib > 0.20 else "Low",
+        "color": "normal" if top_contrib > 0.20 else "inverse"
+    })
 
-# YoY Growth
-if yoy != 0:
-    col5.metric(
-        "Country YoY Growth",
-        f"{yoy*100:.2f}%",
-        delta=f"{yoy*100:.2f}%",
-        delta_color="normal" if yoy > 0 else "inverse"
-    )
+if yoy is not None:
+    kpis.append({
+        "label": "Country YoY Growth",
+        "value": f"{yoy*100:.2f}%",
+        "delta": f"{yoy*100:.2f}%",
+        "color": "normal" if yoy > 0 else "inverse"
+    })
+
+# Create dynamic columns
+if kpis:
+    cols = st.columns(len(kpis))
+    for col, kpi in zip(cols, kpis):
+        col.metric(
+            kpi["label"],
+            kpi["value"],
+            delta=kpi["delta"],
+            delta_color=kpi["color"]
+        )
 else:
-    col5.metric("Country YoY Growth", "N/A")
+    st.info("No KPI data available for this country.")
 
 
-# -----------------------------
+
 ## -----------------------------
 # -----------------------------
 # 6. Top Genres per Country Chart
