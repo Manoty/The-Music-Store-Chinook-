@@ -475,3 +475,30 @@ if {"genre_name", "genre_revenue_country"}.issubset(source_df.columns):
         st.info("No genre revenue data available for this selection.")
 else:
     st.warning("Required genre columns not found in dataset.")
+
+st.subheader("🌎 Revenue by Country (Top N)")
+
+if {"country", "country_revenue"}.issubset(df.columns):
+
+    top_countries = (
+        df.groupby("country", as_index=False)["country_revenue"].sum()
+        .sort_values("country_revenue", ascending=False)
+        .head(top_n_countries)
+        .copy()
+    )
+
+    if not top_countries.empty:
+        fig = px.bar(
+            top_countries,
+            x="country_revenue",
+            y="country",
+            orientation="h",
+            title=f"Top {top_n_countries} Countries by Revenue",
+            text=top_countries["country_revenue"].apply(lambda x: f"${x:,.0f}")
+        )
+        fig.update_layout(yaxis=dict(autorange="reversed"))
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("No country revenue data available.")
+else:
+    st.warning("Required country columns not found in dataset.")
