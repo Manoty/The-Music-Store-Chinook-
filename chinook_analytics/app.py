@@ -382,3 +382,26 @@ if 'genre_revenue_country' in country_df.columns and 'genre_revenue_global' in d
         hovermode="x unified"
     )
     st.plotly_chart(fig_cmp, width='stretch')
+
+st.subheader("🏆 Top 10 Customers by LTV")
+
+if "top_customer_id" in df.columns and "top_customer_ltv" in df.columns:
+
+    top_customers = (
+        df[["top_customer_id", "top_customer_ltv"]]
+        .dropna()
+        .drop_duplicates()
+        .sort_values("top_customer_ltv", ascending=False)
+        .head(10)
+    )
+
+    fig = px.bar(
+        top_customers,
+        x="top_customer_ltv",
+        y="top_customer_id",
+        orientation="h",
+        title="Top 10 Customers by Lifetime Value"
+    )
+
+    fig.update_layout(yaxis=dict(autorange="reversed"))
+    st.plotly_chart(fig, use_container_width=True)
