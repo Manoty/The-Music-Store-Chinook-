@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Cleaned staging table for customers."
+    columns:
+      - name: customer_id
+        description: "Primary key for customers"
+        tests:
+          - not_null
+          - unique
+      - name: first_name
+        tests:
+          - not_null
+      - name: last_name
+        tests:
+          - not_null
+      - name: country
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["USA","Canada","France","Germany","Netherlands","Argentina","Brazil","Mexico"]  # add others as needed
