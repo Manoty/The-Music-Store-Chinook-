@@ -506,3 +506,15 @@ else:
     st.warning("Required global genre columns not found.")
 
 
+st.subheader("💾 Download Data")
+
+if not df.empty:
+    csv = df.to_csv(index=False)
+    st.download_button(
+        label="Download Full Dataset",
+        data=csv,
+        file_name="music_dashboard_data.csv",
+        mime="text/csv"
+    )
+else:
+    st.info("No data available to download.")
