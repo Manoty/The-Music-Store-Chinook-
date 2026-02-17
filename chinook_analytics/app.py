@@ -417,3 +417,35 @@ if {"top_customer_id", "top_customer_ltv"}.issubset(source_df.columns):
         st.info("No customer LTV data available for this selection.")
 else:
     st.warning("Required customer columns not found in dataset.")
+
+
+st.subheader("🎸 Top 10 Genres by Revenue")
+
+source_df = country_df if "country_df" in locals() else df
+
+if {"genre_name", "genre_revenue_country"}.issubset(source_df.columns):
+    
+    top_genres = (
+        source_df.loc[:, ["genre_name", "genre_revenue_country"]]
+        .dropna()
+        .groupby("genre_name", as_index=False)
+        .agg({"genre_revenue_country": "sum"})
+        .sort_values("genre_revenue_country", ascending=False)
+        .head(10)
+        .copy()
+    )
+    
+    if not top_genres.empty:
+        fig = px.bar(
+            top_genres,
+            x="genre_revenue_country",
+            y="genre_name",
+            orientation="h",
+            title="Top 10 Genres by Revenue"
+        )
+        fig.update_layout(yaxis=dict(autorange="reversed"))
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("No genre revenue data available for this selection.")
+else:
+    st.warning("Required genre columns not found in dataset.")
