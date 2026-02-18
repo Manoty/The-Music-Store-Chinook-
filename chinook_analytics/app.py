@@ -204,7 +204,10 @@ else:
 # -----------------------------
 st.subheader("Top Genres per Country (Top 5)")
 
-
+st.markdown("""
+This chart ranks the top N countries based on total revenue performance. 
+It helps identify which geographic markets contribute the most to overall business revenue.
+""")
 
 
 if 'genre_revenue_country' in country_df.columns:
@@ -316,6 +319,8 @@ if 'country_revenue' in country_trend.columns:
 # 8. Top Customers Table
 # -----------------------------
 st.subheader("Top Customers")
+
+
 
 if 'top_customer_ltv' in country_df.columns:
     top_customers = country_df[['top_customer_id', 'top_customer_ltv', 'top_customer_contribution_pct','top_customer_yoy_growth_pct']].drop_duplicates()
