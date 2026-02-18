@@ -18,18 +18,15 @@ st.markdown(
 
 # -----------------------------
 # 2. Connect to DuckDB via dbt (Cached)
+@st.cache_resource
+def get_connection():
+    db_path = os.path.join(os.path.dirname(__file__), "dev.duckdb")
 
+    if not os.path.exists(db_path):
+        st.error(f"DuckDB file not found at {db_path}")
+        st.stop()
 
-if st.button("Refresh Data / Run dbt"):
-    if run_dbt():
-        # Clear cache and reload fresh data
-        yaml.load_all.clear()  # force reload
-        st.experimental_rerun()  # refresh page to pick up new data
-
-# Load KPI data
-df = yaml.load_all()
-
-st.write(df.head())  # just for testing
+    return duckdb.connect(db_path)
 # -----------------------------
 # 3. Refresh dbt & Load Data
 # -----------------------------
@@ -61,6 +58,7 @@ if st.button("🔄 Refresh Data (Run dbt)"):
     df = run_dbt_and_reload()
 else:
     df = load_data()
+
 
 # -----------------------------
 # D: Debug panel to see columns
