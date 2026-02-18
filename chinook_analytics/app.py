@@ -10,10 +10,10 @@ import subprocess
 # -----------------------------
 # 1. Page Setup
 # -----------------------------
-st.set_page_config(page_title="Music Store Executive Dashboard", layout="w")
+st.set_page_config(page_title="Music Store Executive Dashboard", layout="wide")
 st.title("🎵 Music Store Executive Dashboard")
 st.markdown(
-    "Interactive KPIs, trends, top customers, with executive visuals & one-click dbt refresh"
+    "Interactive revenue intelligence platform powered by dbt and Streamlit, delivering country performance insights, customer value analytics, and genre trend monitoring with real-time refresh capability."
 )
 
 # -----------------------------
