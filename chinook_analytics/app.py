@@ -313,6 +313,8 @@ if 'country_revenue' in country_trend.columns:
 # 8. Top Customers Table
 # -----------------------------
 st.subheader("Top Customers")
+
+
 if 'top_customer_ltv' in country_df.columns:
     top_customers = country_df[['top_customer_id', 'top_customer_ltv', 'top_customer_contribution_pct','top_customer_yoy_growth_pct']].drop_duplicates()
     if not top_customers.empty:
