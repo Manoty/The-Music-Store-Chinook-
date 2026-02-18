@@ -171,7 +171,7 @@ if top_genre_revenue and top_genre_revenue > 0:
         country_df.sort_values("genre_revenue_country", ascending=False)
         .iloc[0]["genre_name"] if "genre_name" in country_df.columns else "the leading genre"
     )
-    summary_lines.append(f"{top_genre_name} is the top-performing genre with {format_currency(top_genre_revenue)} in revenue.")
+    summary_lines.append(f"{top_genre_name} is the top-performing genre with {format_currency(top_genre_revenue) million dollars}  in revenue.")
 
 if top_contrib and top_contrib > 0:
     if top_contrib > 0.25:
