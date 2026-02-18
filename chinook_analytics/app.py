@@ -272,53 +272,7 @@ if 'genre_revenue_country' in country_df.columns:
     st.plotly_chart(genre_chart, width='stretch')
 
 # -----------------------------
-# 7. Country Revenue Trend with MoM & YTD
-# -----------------------------
-st.subheader("Country Revenue Trend")
-
-st.markdown("""
-This chart displays the monthly revenue performance for the selected country, along with optional year-to-date (YTD) revenue trends. 
-It highlights short-term growth patterns, month-over-month changes, and cumulative performance over time.
-""")
-
-
-revenue_cols = ['country_revenue']
-if 'country_ytd_revenue' in top_countries_df.columns:
-    revenue_cols.append('country_ytd_revenue')
-
-revenue_trend = top_countries_df.groupby(['revenue_month', 'country'])[revenue_cols].sum().reset_index()
-country_trend = revenue_trend[revenue_trend['country'] == selected_country]
-
-if 'country_revenue' in country_trend.columns:
-    country_trend['prev_month'] = country_trend['country_revenue'].shift(1)
-    country_trend['growth_pct'] = (country_trend['country_revenue'] - country_trend['prev_month']) / country_trend['prev_month']
-    country_trend['hover_text'] = country_trend.apply(
-        lambda x: f"{x['revenue_month']}: ${x['country_revenue']:,.0f}" + (f" ({x['growth_pct']*100:+.1f}%)" if x['prev_month'] else ""), axis=1
-    )
-
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=country_trend['revenue_month'],
-        y=country_trend['country_revenue'],
-        mode='lines+markers+text',
-        text=country_trend['hover_text'],
-        textposition="top center",
-        name='Monthly Revenue',
-        line=dict(color='blue')
-    ))
-    if 'country_ytd_revenue' in country_trend.columns:
-        fig.add_trace(go.Scatter(
-            x=country_trend['revenue_month'],
-            y=country_trend['country_ytd_revenue'],
-            mode='lines+markers',
-            name='YTD Revenue',
-            line=dict(color='green'),
-            hovertemplate='%{x}: $%{y:,.0f}<extra></extra>'
-        ))
-    fig.update_layout(title=f"{selected_country} Revenue & YTD Trend", xaxis_title="Month", yaxis_title="Revenue")
-    st.plotly_chart(fig, width='stretch')
-
-# -----------------------------
+#
 # 8. Top Customers Table
 # -----------------------------
 st.subheader("Top Customers")
