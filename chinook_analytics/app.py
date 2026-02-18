@@ -452,8 +452,8 @@ else:
 st.subheader("📊 Global Genre Revenue Trend")
 
 st.markdown("""
-This chart displays the monthly revenue performance for the selected country, along with optional year-to-date (YTD) revenue trends. 
-It highlights short-term growth patterns, month-over-month changes, and cumulative performance over time.
+This chart visualizes monthly global revenue trends across all music genres.
+It provides a macro-level perspective on international demand and industry performance shifts.
 """)
 
 
