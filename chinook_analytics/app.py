@@ -31,7 +31,9 @@ def get_connection():
 # 3. Refresh dbt & Load Data
 # -----------------------------
 @st.cache_data
+@st.cache_data
 def load_data():
+    conn = get_connection()
     return conn.execute("SELECT * FROM fct_music_kpi").df()
 
 def run_dbt_and_reload():
