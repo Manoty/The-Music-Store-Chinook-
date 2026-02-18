@@ -392,6 +392,11 @@ if 'genre_revenue_country' in country_df.columns and 'genre_revenue_global' in d
 # 🔹 1️⃣ Top 10 Genres by Revenue
 st.subheader("🎸 Top 10 Genres by Revenue")
 
+st.markdown("""
+This chart visualizes monthly global revenue trends across all music genres.
+It provides a macro-level perspective on international demand and industry performance shifts.
+""")
+
 source_df = country_df if "country_df" in locals() else df
 
 if {"genre_name", "genre_revenue_country"}.issubset(source_df.columns):
