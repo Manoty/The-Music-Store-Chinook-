@@ -158,7 +158,7 @@ st.subheader("📊 Executive Summary")
 summary_lines = []
 
 if country_revenue and country_revenue > 0:
-    summary_lines.append(f"{selected_country} generated {format_currency(country_revenue)} in total revenue.")
+    summary_lines.append(f"{selected_country} generated {format_currency(country_revenue)} million dollars in total revenue.")
 
 if yoy is not None:
     if yoy > 0:
