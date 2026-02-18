@@ -357,6 +357,12 @@ if 'genre_revenue_global' in df.columns:
 # 10. Country vs Global Genre Comparison
 # -----------------------------
 st.subheader(f"{selected_genre} - Country vs Global Comparison")
+
+st.markdown("""
+This chart compares the selected country’s genre performance against global revenue trends for the same genre. 
+It helps determine whether the country is outperforming or underperforming the broader global market.
+""")
+
 if 'genre_revenue_country' in country_df.columns and 'genre_revenue_global' in df.columns:
     country_genre_trend = country_df[country_df['genre_name'] == selected_genre].groupby('revenue_month')['genre_revenue_country'].sum().reset_index()
     global_genre_trend = df[df['genre_name'] == selected_genre].groupby('revenue_month')['genre_revenue_global'].sum().reset_index()
