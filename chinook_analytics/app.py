@@ -17,7 +17,17 @@ st.markdown(
 )
 
 # -----------------------------
+# 2. Connect to DuckDB via dbt (Cached)
+@st.cache_resource
+def get_connection():
+    db_path = os.path.join(os.path.dirname(__file__), "dev.duckdb")
 
+    if not os.path.exists(db_path):
+        st.error(f"DuckDB file not found at {db_path}")
+        st.stop()
+
+    return duckdb.connect(db_path)
+# -----------------------------
 # 3. Refresh dbt & Load Data
 # -----------------------------
 @st.cache_data
