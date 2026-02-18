@@ -18,7 +18,9 @@ st.markdown(
 
 # -----------------------------
 # 2. Connect to DuckDB via dbt (Cached)
-@st.cache_resource
+# -----------------------------
+# 2. Connect to DuckDB (NO CACHE)
+# -----------------------------
 def get_connection():
     db_path = os.path.join(os.path.dirname(__file__), "dev.duckdb")
 
@@ -27,45 +29,50 @@ def get_connection():
         st.stop()
 
     return duckdb.connect(db_path)
+
+
 # -----------------------------
-# 3. Refresh dbt & Load Data
+# 3. Load Data (Cache DATA only)
 # -----------------------------
-@st.cache_data(ttl=60)  # single decorator
+@st.cache_data(ttl=60)
 def load_data():
     conn = get_connection()
     df = conn.execute("SELECT * FROM fct_music_kpi").df()
-    conn.close()  # close connection
+    conn.close()   # 🔥 VERY IMPORTANT
     return df
 
+
 # -----------------------------
-# 3. Run dbt & Reload
+# 4. Run dbt + Refresh
 # -----------------------------
 def run_dbt_and_reload():
-    st.info("Running dbt models...")
     try:
+        st.info("Running dbt models...")
+
         subprocess.run(
             ["dbt", "run"],
             check=True,
-            cwd="C:/kev/chinook_music/chinook/"  # 👈 project root
+            cwd="C:/kev/chinook_music/chinook"  # 👈 must be where dbt_project.yml lives
         )
+
         st.success("dbt run completed. Reloading fresh data...")
-        load_data.clear()  # clear cached data
-        return load_data()  # reload fresh data
+
+        load_data.clear()   # clear cache
+        return load_data()  # reload fresh
+
     except subprocess.CalledProcessError as e:
         st.error(f"dbt run failed:\n{e}")
         st.stop()
 
+
 # -----------------------------
-# 4. Refresh Button
+# 5. Refresh Button
 # -----------------------------
 if st.button("🔄 Refresh Data (Run dbt)"):
     df = run_dbt_and_reload()
 else:
     df = load_data()
 
-st.write(df.head())  # just for testing
-
-# -----------------------------
 # D: Debug panel to see columns
 # -----------------------------
 st.sidebar.subheader("Debug: Available Columns")
@@ -157,7 +164,7 @@ if kpis:
 else:
     st.info("No KPI data available for this country.")
 
-st.caption("Note: Values scaled  for executive visualization purposes.")
+st.caption("Note: Values scaled by 1M for executive visualization purposes.")
 
 # -----------------------------
 # 5B. Executive Summary
@@ -192,19 +199,6 @@ if summary_lines:
     st.markdown(" ".join(summary_lines))
 else:
     st.info("Not enough data available to generate executive summary.")
-
-# -----------------------------
-# The rest of your app (charts, top customers, global genre trend, comparison) remains unchanged
-# -----------------------------
-# You can keep the rest of your working code for:
-# - Top Genres per Country
-# - Country Revenue Trend
-# - Top Customers
-# - Global Genre Revenue Trend
-# - Country vs Global Comparison
-# without modification.
-
-
 
 
 ## -----------------------------
