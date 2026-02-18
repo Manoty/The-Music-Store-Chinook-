@@ -59,7 +59,6 @@ if st.button("🔄 Refresh Data (Run dbt)"):
 else:
     df = load_data()
 
-
 # -----------------------------
 # D: Debug panel to see columns
 # -----------------------------
