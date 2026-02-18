@@ -60,7 +60,7 @@ else:
     df = load_data()
 
 # -----------------------------
-# Optional: Debug panel to see columns
+# D: Debug panel to see columns
 # -----------------------------
 st.sidebar.subheader("Debug: Available Columns")
 st.sidebar.write(df.columns.tolist())
