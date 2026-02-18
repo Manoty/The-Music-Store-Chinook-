@@ -77,9 +77,9 @@ top_countries_df = df[df['country_rank'] <= top_n_countries]
 country_df = top_countries_df[top_countries_df['country'] == selected_country]
 
 # -----------------------------
-# 5. KPI Cards (Auto-Hide Empty + K/M formatting)
-# -----------------------------
 st.subheader(f"Top KPIs for {selected_country}")
+
+DISPLAY_MULTIPLIER = 1_000_000  # Scale numbers for executive display
 
 def format_currency(val):
     """Format number with K / M suffix"""
@@ -90,9 +90,10 @@ def format_currency(val):
     else:
         return f"${val:,.0f}"
 
-country_revenue = country_df['country_revenue'].sum() if 'country_revenue' in country_df.columns else None
-top_genre_revenue = country_df['genre_revenue_country'].max() if 'genre_revenue_country' in country_df.columns else None
-top_ltv = country_df['top_customer_ltv'].max() if 'top_customer_ltv' in country_df.columns else None
+# Scale values by DISPLAY_MULTIPLIER
+country_revenue = country_df['country_revenue'].sum() * DISPLAY_MULTIPLIER if 'country_revenue' in country_df.columns else None
+top_genre_revenue = country_df['genre_revenue_country'].max() * DISPLAY_MULTIPLIER if 'genre_revenue_country' in country_df.columns else None
+top_ltv = country_df['top_customer_ltv'].max() * DISPLAY_MULTIPLIER if 'top_customer_ltv' in country_df.columns else None
 top_contrib = country_df['top_customer_contribution_pct'].max() if 'top_customer_contribution_pct' in country_df.columns else None
 yoy = country_df['country_yoy_growth_pct'].mean() if 'country_yoy_growth_pct' in country_df.columns else None
 
@@ -149,6 +150,8 @@ if kpis:
         )
 else:
     st.info("No KPI data available for this country.")
+
+st.caption("Note: Values scaled by 1M for executive visualization purposes.")
 
 # -----------------------------
 # 5B. Executive Summary
