@@ -30,34 +30,40 @@ def get_connection():
 # -----------------------------
 # 3. Refresh dbt & Load Data
 # -----------------------------
-@st.cache_data
-@st.cache_data
+@st.cache_data(ttl=60)  # single decorator
 def load_data():
     conn = get_connection()
-    return conn.execute("SELECT * FROM fct_music_kpi").df()
+    df = conn.execute("SELECT * FROM fct_music_kpi").df()
+    conn.close()  # close connection
+    return df
 
+# -----------------------------
+# 3. Run dbt & Reload
+# -----------------------------
 def run_dbt_and_reload():
+    st.info("Running dbt models...")
     try:
-        st.info("Running dbt models...")
-
         subprocess.run(
             ["dbt", "run"],
             check=True,
-            cwd="C:/kev/chinook_music/chinook/chinook_analytics"  # 👈 dbt project root
+            cwd="C:/kev/chinook_music/chinook/"  # 👈 project root
         )
-
         st.success("dbt run completed. Reloading fresh data...")
-        load_data.clear()
-        return load_data()
-
-    except subprocess.CalledProcessError:
-        st.error("dbt run failed. Check terminal for details.")
+        load_data.clear()  # clear cached data
+        return load_data()  # reload fresh data
+    except subprocess.CalledProcessError as e:
+        st.error(f"dbt run failed:\n{e}")
         st.stop()
 
+# -----------------------------
+# 4. Refresh Button
+# -----------------------------
 if st.button("🔄 Refresh Data (Run dbt)"):
     df = run_dbt_and_reload()
 else:
     df = load_data()
+
+st.write(df.head())  # just for testing
 
 # -----------------------------
 # D: Debug panel to see columns
