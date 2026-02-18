@@ -266,6 +266,13 @@ if 'genre_revenue_country' in country_df.columns:
 # 7. Country Revenue Trend with MoM & YTD
 # -----------------------------
 st.subheader("Country Revenue Trend")
+
+st.markdown("""
+This chart displays the monthly revenue performance for the selected country, along with optional year-to-date (YTD) revenue trends. 
+It highlights short-term growth patterns, month-over-month changes, and cumulative performance over time.
+""")
+
+
 revenue_cols = ['country_revenue']
 if 'country_ytd_revenue' in top_countries_df.columns:
     revenue_cols.append('country_ytd_revenue')
