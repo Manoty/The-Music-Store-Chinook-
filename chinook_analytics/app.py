@@ -323,7 +323,7 @@ st.subheader("Top Customers")
 st.markdown("""
 This chart shows the percentage of total revenue contributed by the top customers. 
 It helps assess revenue dependency and determine whether sales are diversified or concentrated among a few clients.)
-
+""")
 if 'top_customer_ltv' in country_df.columns:
     top_customers = country_df[['top_customer_id', 'top_customer_ltv', 'top_customer_contribution_pct','top_customer_yoy_growth_pct']].drop_duplicates()
     if not top_customers.empty:
@@ -513,6 +513,12 @@ else:
 
 
 st.subheader("💾 Download Data")
+
+st.markdown("""
+This chart visualizes monthly global revenue trends across all music genres.
+It provides a macro-level perspective on international demand and industry performance shifts.
+""")
+
 
 if not df.empty:
     csv = df.to_csv(index=False)
