@@ -515,8 +515,8 @@ else:
 st.subheader("💾 Download Data")
 
 st.markdown("""
-This chart visualizes monthly global revenue trends across all music genres.
-It provides a macro-level perspective on international demand and industry performance shifts.
+This feature allows users to download the full KPI dataset in CSV format for further analysis. 
+It supports reporting, advanced modeling, and executive sharing outside the dashboard environment.
 """)
 
 
