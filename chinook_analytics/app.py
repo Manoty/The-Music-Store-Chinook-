@@ -17,17 +17,7 @@ st.markdown(
 )
 
 # -----------------------------
-# 2. Connect to DuckDB via dbt (Cached)
-@st.cache_resource
-def get_connection():
-    db_path = os.path.join(os.path.dirname(__file__), "dev.duckdb")
 
-    if not os.path.exists(db_path):
-        st.error(f"DuckDB file not found at {db_path}")
-        st.stop()
-
-    return duckdb.connect(db_path)
-# -----------------------------
 # 3. Refresh dbt & Load Data
 # -----------------------------
 @st.cache_data
@@ -151,7 +141,7 @@ if kpis:
 else:
     st.info("No KPI data available for this country.")
 
-st.caption("Note: Values scaled by 1M for executive visualization purposes.")
+st.caption("Note: Values scaled  for executive visualization purposes.")
 
 # -----------------------------
 # 5B. Executive Summary
