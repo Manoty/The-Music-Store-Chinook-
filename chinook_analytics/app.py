@@ -204,6 +204,9 @@ else:
 # -----------------------------
 st.subheader("Top Genres per Country (Top 5)")
 
+
+
+
 if 'genre_revenue_country' in country_df.columns:
 
     top_genres = (
@@ -341,6 +344,12 @@ if 'top_customer_ltv' in country_df.columns:
 # 9. Global Genre Revenue Trend
 # -----------------------------
 st.subheader("Global Genre Revenue Trend")
+
+st.markdown("""
+This chart visualizes monthly global revenue trends across all music genres. 
+It provides a macro-level perspective on international demand and industry performance shifts.
+""")
+
 if 'genre_revenue_global' in df.columns:
     genre_trend = df.groupby(['revenue_month', 'genre_name'])['genre_revenue_global'].sum().reset_index()
     selected_genre_trend = genre_trend[genre_trend['genre_name'] == selected_genre]
