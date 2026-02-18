@@ -314,7 +314,6 @@ if 'country_revenue' in country_trend.columns:
 # -----------------------------
 st.subheader("Top Customers")
 
-
 if 'top_customer_ltv' in country_df.columns:
     top_customers = country_df[['top_customer_id', 'top_customer_ltv', 'top_customer_contribution_pct','top_customer_yoy_growth_pct']].drop_duplicates()
     if not top_customers.empty:
@@ -451,6 +450,12 @@ else:
 
 
 st.subheader("📊 Global Genre Revenue Trend")
+
+st.markdown("""
+This chart displays the monthly revenue performance for the selected country, along with optional year-to-date (YTD) revenue trends. 
+It highlights short-term growth patterns, month-over-month changes, and cumulative performance over time.
+""")
+
 
 if {"revenue_month", "genre_name", "genre_revenue_global"}.issubset(df.columns):
 
