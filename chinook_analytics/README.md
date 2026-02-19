@@ -105,3 +105,38 @@ Fact table: fct_music_kpi →
 DuckDB →
 Streamlit dashboard
 
+The dashboard reads from the transformed fact model, not raw tables.
+
+⚙️ Installation & Setup
+1️⃣ Clone the repository
+git clone <your-repo-url>
+cd <repo-name>
+
+2️⃣ Install dependencies
+pip install -r requirements.txt
+
+3️⃣ Run dbt models
+
+Navigate to your dbt project root:
+
+dbt run
+
+4️⃣ Launch Streamlit app
+streamlit run app.py
+
+🔄 Refreshing Data
+
+Inside the dashboard:
+
+Click "🔄 Refresh Data (Run dbt)"
+
+This will:
+
+Execute dbt run
+
+Clear cached data
+
+Reload fresh results
+
+Update KPIs and charts live
+
