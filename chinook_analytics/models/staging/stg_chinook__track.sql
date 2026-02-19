@@ -14,7 +14,8 @@ renamed as (
         genreid as genre_id,
         composer as composer,
         milliseconds as milliseconds,
-        
+        bytes as bytes,
+        unitprice as unit_price
 
     from source
 
