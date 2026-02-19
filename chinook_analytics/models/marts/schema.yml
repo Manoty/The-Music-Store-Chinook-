@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: fct_music_kpi
+    description: Fact table containing country, genre and revenue KPIs
+
+    columns:
+      - name: country
+        tests:
+          - not_null
+
+      - name: genre_name
+        tests:
+          - not_null
+
+      - name: country_revenue
+        tests:
+          - not_null
+
+      - name: country_rank
+        tests:
+          - not_null
+
+      - name: top_customer_ltv
+        tests:
+          - not_null
+
+      - name: country_yoy_growth_pct
+        tests:
+          - not_null
