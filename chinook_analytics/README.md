@@ -1,4 +1,4 @@
-🎵 Music Store Executive Dashboard
+🎵 Frenzy Music Store Executive Dashboard
 
 An interactive executive analytics dashboard built with Streamlit, dbt, and DuckDB, delivering country-level revenue intelligence, customer value insights, and genre performance analytics with real-time data refresh capability.
 
