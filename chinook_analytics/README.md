@@ -140,3 +140,14 @@ Reload fresh results
 
 Update KPIs and charts live
 
+📁 Project Structure (Example)
+├── app.py
+├── dev.duckdb
+├── models/
+│   ├── staging/
+│   ├── marts/
+│   │   └── fct_music_kpi.sql
+├── dbt_project.yml
+├── requirements.txt
+└── README.md
+
