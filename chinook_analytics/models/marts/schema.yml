@@ -17,4 +17,14 @@ models:
         tests:
           - not_null
 
-     
+      - name: country_rank
+        tests:
+          - not_null
+
+      - name: top_customer_ltv
+        tests:
+          - not_null
+
+      - name: country_yoy_growth_pct
+        tests:
+          - not_null
