@@ -19,4 +19,4 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ["USA","Canada","France","Germany","Netherlands","Argentina","Brazil","Mexico"]  # add others as needed
+              values: ["USA","Canada","France","Germany","Netherlands","Argentina","Brazil","Mexico"]  

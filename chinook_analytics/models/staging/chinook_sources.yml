@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: chinook
-    schema: main   # (DuckDB/SQLite usually main)
+    schema: main   
     tables:
       - name: customer
       - name: invoice
