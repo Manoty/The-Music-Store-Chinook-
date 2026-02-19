@@ -151,3 +151,25 @@ Update KPIs and charts live
 ├── requirements.txt
 └── README.md
 
+📌 Notes
+
+Revenue values are scaled (×1,000,000) in the presentation layer to simulate enterprise-scale reporting.
+
+Chinook dataset is used for modeling demonstration purposes.
+
+Designed for portfolio & technical showcase use.
+
+🎯 What This Project Demonstrates
+
+✔ dbt modeling best practices
+✔ Fact table design
+✔ Analytical KPI engineering
+✔ Streamlit production patterns
+✔ Cache management
+✔ dbt + Streamlit integration
+✔ Executive storytelling with data
+
+👤 Author
+
+Kevin
+Data Engineering & Analytics Portfolio Project
